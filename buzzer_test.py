@@ -1,20 +1,26 @@
 import RPi.GPIO as GPIO
 import time
 
-BUZZER = 18  # I/O pin
-
+# Setup
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(BUZZER, GPIO.OUT)
+GPIO.setup(17, GPIO.OUT)
+
+print("SmartFactory Buzzer Test")
+print("Buzzer will beep 5 times...")
+print("Press CTRL+C to stop\n")
 
 try:
-    while True:
-        print("Buzzer ON")
-        GPIO.output(BUZZER, 0)
-        time.sleep(10)
+    for i in range(5):
+        print(f"Beep {i+1}...")
+        GPIO.output(17, GPIO.HIGH)  # Buzzer ON
+        time.sleep(0.5)
+        GPIO.output(17, GPIO.LOW)   # Buzzer OFF
+        time.sleep(0.5)
 
-        print("Buzzer OFF")
-        GPIO.output(BUZZER, 1)
-        time.sleep(10)
+    print("\nTest complete! Buzzer working! ?")
 
 except KeyboardInterrupt:
+    print("\nTest stopped. Goodbye!")
+
+finally:
     GPIO.cleanup()

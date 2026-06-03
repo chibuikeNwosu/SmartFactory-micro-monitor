@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!-- ============================================================
+       SmartFactory Micro-Monitor — Main HTML File
+       Project: Environmental Compliance Station for SME Manufacturers
+       Team: Chibuike Nwosu, Prosper Obiezue, Michelle Otomewo
+       College: Griffith College Dublin — 2026
+       ============================================================ -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartFactory Micro-Monitor</title>
+
+  <!-- Google Fonts — loaded before CSS so fonts are ready -->
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+
+  <!-- ============================================================
+       TOP NAVIGATION BAR
+       Contains: Logo, Live status pill, Real-time clock
+       ============================================================ -->
+  <nav>
+    <div class="logo">
+      <div class="logo-icon">🏭</div>
+      <div class="logo-text">Smart<span>Factory</span></div>
+    </div>
+
+    <div class="nav-right">
+      <!-- Animated live monitoring indicator -->
+      <div class="status-pill">
+        <div class="pulse"></div>
+        LIVE MONITORING
+      </div>
+
+      <!-- Real-time clock — updated every second by clock.js -->
+      <div class="time-display" id="clock">--:--:--</div>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       MAIN CONTENT AREA
+       ============================================================ -->
+  <main>
+
+    <!-- ── COMPLIANCE BANNER ──────────────────────────────────────
+         Shows: Overall compliance score, key stats, report button
+         The score ring SVG is animated via sensors.js
+         ─────────────────────────────────────────────────────── -->
+    <div class="compliance-banner">
+
+      <div class="compliance-left">
+        <!-- Circular SVG score ring — animated with stroke-dashoffset -->
+        <svg class="compliance-score-ring" viewBox="0 0 80 80">
+          <!-- Background track ring -->
+          <circle cx="40" cy="40" r="32" fill="none" stroke="#1e2d45" stroke-width="6"/>
+          <!-- Animated foreground ring — updated by sensors.js -->
+          <circle id="score-ring" cx="40" cy="40" r="32" fill="none"
+            stroke="#00e5a0" stroke-width="6"
+            stroke-dasharray="201" stroke-dashoffset="30"
+            stroke-linecap="round" transform="rotate(-90 40 40)"
+            style="transition:stroke-dashoffset 1s ease"/>
+          <!-- Score percentage text -->
+          <text x="40" y="37" text-anchor="middle"
+            font-family="Share Tech Mono" font-size="16" fill="#e2e8f0">85%</text>
+          <text x="40" y="51" text-anchor="middle"
+            font-family="Barlow" font-size="9" fill="#4b6080" letter-spacing="1">SCORE</text>
+        </svg>
+
+        <div class="score-info">
+          <h2>COMPLIANT</h2>
+          <p>Factory operating within acceptable limits</p>
+          <p class="unit">LAST UPDATED: <span id="last-update">--</span></p>
+        </div>
+      </div>
+
+      <!-- Key statistics — updated by sensors.js -->
+      <div class="compliance-stats">
+        <div class="c-stat">
+          <div class="val good" id="stat-readings">0</div>
+          <div class="lbl">Readings Today</div>
+        </div>
+        <div class="c-stat">
+          <div class="val warn" id="stat-breaches">2</div>
+          <div class="lbl">Breaches</div>
+        </div>
+        <div class="c-stat">
+          <div class="val good">5/6</div>
+          <div class="lbl">Sensors OK</div>
+        </div>
+        <div class="c-stat">
+          <div class="val good">7</div>
+          <div class="lbl">Days Tracked</div>
+        </div>
+      </div>
+
+      <!-- Triggers report modal — handled by modal.js -->
+      <button class="report-btn" onclick="showReportModal()">
+        ⬇ GENERATE REPORT
+      </button>
+
+    </div><!-- end .compliance-banner -->
+
+    <!-- ── SENSOR CARDS GRID ──────────────────────────────────────
+         6 cards, one per sensor
+         Each card has: label, status badge, value, description, bar
+         Values and status are updated every 5s by sensors.js
+         ─────────────────────────────────────────────────────── -->
+    <div class="sensor-grid">
+
+      <!-- Card 1: DHT22 Temperature -->
+      <div class="sensor-card good" id="card-temp">
+        <div class="card-top">
+          <div class="card-label">🌡 TEMPERATURE</div>
+          <div class="card-status good" id="status-temp">NORMAL</div>
+        </div>
+        <div class="card-value" id="val-temp">
+          21.4<span class="unit">°C</span>
+        </div>
+        <div class="card-desc">Optimal range: 16°C – 26°C</div>
+        <div class="card-bar">
+          <div class="card-bar-fill" id="bar-temp" style="width:55%"></div>
+        </div>
+      </div>
+
+      <!-- Card 2: DHT22 Humidity -->
+      <div class="sensor-card good" id="card-hum">
+        <div class="card-top">
+          <div class="card-label">💧 HUMIDITY</div>
+          <div class="card-status good" id="status-hum">NORMAL</div>
+        </div>
+        <div class="card-value" id="val-hum">
+          58.2<span class="unit">%</span>
+        </div>
+        <div class="card-desc">Optimal range: 30% – 70%</div>
+        <div class="card-bar">
+          <div class="card-bar-fill" id="bar-hum" style="width:58%"></div>
+        </div>
+      </div>
+
+      <!-- Card 3: MQ-135 Air Quality (via ADS1115 ADC) -->
+      <div class="sensor-card warn" id="card-air">
+        <div class="card-top">
+          <div class="card-label">💨 AIR QUALITY</div>
+          <div class="card-status warn" id="status-air">MODERATE</div>
+        </div>
+        <div class="card-value" id="val-air">
+          1.24<span class="unit">V</span>
+        </div>
+        <div class="card-desc">MQ-135 VOC / CO2 sensor reading</div>
+        <div class="card-bar">
+          <div class="card-bar-fill" id="bar-air" style="width:62%"></div>
+        </div>
+      </div>
+
+      <!-- Card 4: KY-037 Noise Sensor (via ADS1115 ADC) -->
+      <div class="sensor-card good" id="card-noise">
+        <div class="card-top">
+          <div class="card-label">🔊 NOISE LEVEL</div>
+          <div class="card-status good" id="status-noise">QUIET</div>
+        </div>
+        <div class="card-value" id="val-noise">
+          0.153<span class="unit">V</span>
+        </div>
+        <div class="card-desc">KY-037 ambient noise sensor</div>
+        <div class="card-bar">
+          <div class="card-bar-fill" id="bar-noise" style="width:20%"></div>
+        </div>
+      </div>
+
+      <!-- Card 5: PMS5003 Dust Sensor (UART Serial) -->
+      <div class="sensor-card good" id="card-dust">
+        <div class="card-top">
+          <div class="card-label">🌫 DUST PM2.5</div>
+          <div class="card-status good" id="status-dust">GOOD</div>
+        </div>
+        <div class="card-value" id="val-dust">
+          5<span class="unit">μg/m³</span>
+        </div>
+        <div class="card-desc">PMS5003 particulate matter sensor</div>
+        <div class="card-bar">
+          <div class="card-bar-fill" id="bar-dust" style="width:15%"></div>
+        </div>
+      </div>
+
+      <!-- Card 6: SCT-013 Energy Monitoring -->
+      <div class="sensor-card good" id="card-energy">
+        <div class="card-top">
+          <div class="card-label">⚡ ENERGY</div>
+          <div class="card-status good" id="status-energy">NORMAL</div>
+        </div>
+        <div class="card-value" id="val-energy">
+          2.4<span class="unit">kW</span>
+        </div>
+        <div class="card-desc">SCT-013 current clamp reading</div>
+        <div class="card-bar">
+          <div class="card-bar-fill" id="bar-energy" style="width:40%"></div>
+        </div>
+      </div>
+
+    </div><!-- end .sensor-grid -->
+
+    <!-- ── BOTTOM SECTION — Charts + Alerts ──────────────────────
+         Two column layout:
+         Left  → Historical trend chart (Chart.js)
+         Right → Live alert/breach log
+         ─────────────────────────────────────────────────────── -->
+    <div class="bottom-grid">
+
+      <!-- Historical Trend Chart Panel -->
+      <div class="chart-panel">
+        <div class="panel-header">
+          <div class="panel-title">Historical Trends</div>
+
+          <!-- Tab buttons — switch between sensor datasets -->
+          <div class="chart-tabs">
+            <button class="chart-tab active" onclick="switchChart('temp', this)">TEMP</button>
+            <button class="chart-tab" onclick="switchChart('air', this)">AIR</button>
+            <button class="chart-tab" onclick="switchChart('dust', this)">DUST</button>
+            <button class="chart-tab" onclick="switchChart('noise', this)">NOISE</button>
+          </div>
+        </div>
+
+        <!-- Canvas element — Chart.js renders here -->
+        <div class="chart-container">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Alert Log Panel -->
+      <div class="alerts-panel">
+        <div class="panel-header">
+          <div class="panel-title">Alert Log</div>
+          <!-- Updated dynamically by alerts.js -->
+          <div class="alert-count" id="alert-count">2 EVENTS</div>
+        </div>
+
+        <!-- Alert items injected here by alerts.js -->
+        <div class="alert-list" id="alert-list">
+
+          <!-- Pre-loaded alerts for demo purposes -->
+          <div class="alert-item">
+            <div class="alert-dot warn"></div>
+            <div class="alert-body">
+              <div class="alert-msg">Air quality elevated — VOC reading 1.24V exceeded moderate threshold (1.0V)</div>
+              <div class="alert-time">TODAY 09:42:15</div>
+            </div>
+          </div>
+
+          <div class="alert-item">
+            <div class="alert-dot warn"></div>
+            <div class="alert-body">
+              <div class="alert-msg">Noise spike detected — reading 0.21V exceeded moderate threshold</div>
+              <div class="alert-time">TODAY 08:17:33</div>
+            </div>
+          </div>
+
+          <div class="alert-item">
+            <div class="alert-dot good"></div>
+            <div class="alert-body">
+              <div class="alert-msg">System started — all sensors initialised successfully</div>
+              <div class="alert-time">TODAY 07:00:00</div>
+            </div>
+          </div>
+
+        </div><!-- end .alert-list -->
+      </div><!-- end .alerts-panel -->
+
+    </div><!-- end .bottom-grid -->
+
+  </main>
+
+  <!-- ── FOOTER ───────────────────────────────────────────────── -->
+  <footer>
+    SmartFactory Micro-Monitor &nbsp;|&nbsp; Raspberry Pi 3B &nbsp;|&nbsp;
+    Griffith College Dublin &nbsp;|&nbsp;
+    <span>Chibuike Nwosu · Prosper Obiezue · Michelle Otomewo</span>
+    &nbsp;|&nbsp; 2026
+  </footer>
+
+  <!-- ============================================================
+       REPORT MODAL
+       Shown when user clicks Generate Report button
+       Dismissed by clicking Close or clicking outside
+       ============================================================ -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h3>📄 REPORT GENERATED</h3>
+      <p>
+        Your weekly compliance report has been generated and is ready for download.
+        This report covers the past 7 days of environmental monitoring data and
+        includes your overall compliance score, sensor averages, and all
+        threshold breach events.
+      </p>
+      <p class="modal-filename">SmartFactory_Report_2026-06-02.pdf</p>
+      <button class="modal-close" onclick="closeModal()">CLOSE</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       JAVASCRIPT FILES
+       Loaded at bottom so HTML is fully rendered before scripts run
+       Order matters:
+       1. chart.js  — Chart.js library (CDN)
+       2. clock.js  — Real-time clock updater
+       3. charts.js — Chart rendering and tab switching
+       4. sensors.js — Sensor simulation and live updates
+       5. alerts.js — Alert log management
+       6. modal.js  — Report modal open/close
+       ============================================================ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="js/clock.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/sensors.js"></script>
+  <script src="js/alerts.js"></script>
+  <script src="js/modal.js"></script>
+
+</body>
+</html>

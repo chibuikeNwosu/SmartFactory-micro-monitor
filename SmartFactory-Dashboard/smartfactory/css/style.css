@@ -1,0 +1,718 @@
+/* ================================================================
+   SmartFactory Micro-Monitor — Main Stylesheet
+   File: css/style.css
+
+   Contents:
+   1.  CSS Variables (design tokens)
+   2.  Reset & Base Styles
+   3.  Scanline Overlay Effect
+   4.  Navigation Bar
+   5.  Compliance Banner
+   6.  Sensor Cards Grid
+   7.  Chart Panel
+   8.  Alerts Panel
+   9.  Footer
+   10. Report Modal
+   11. Animations & Keyframes
+   12. Responsive / Mobile Styles
+   ================================================================ */
+
+
+/* ── 1. CSS VARIABLES (Design Tokens) ──────────────────────────
+   All colours, fonts and spacing are defined here.
+   Change these values to retheme the entire dashboard.
+   ─────────────────────────────────────────────────────────── */
+:root {
+  /* Background layers — darkest to lightest */
+  --bg:      #0a0e14;
+  --bg2:     #0f1520;
+  --bg3:     #151d2e;
+  --panel:   #111827;
+
+  /* Border colours */
+  --border:  #1e2d45;
+  --border2: #243552;
+
+  /* Status colours */
+  --green:      #00e5a0;
+  --green-dim:  rgba(0, 229, 160, 0.12);
+  --amber:      #f59e0b;
+  --amber-dim:  rgba(245, 158, 11, 0.12);
+  --red:        #ef4444;
+  --red-dim:    rgba(239, 68, 68, 0.12);
+  --blue:       #3b82f6;
+  --blue-dim:   rgba(59, 130, 246, 0.12);
+
+  /* Text colours */
+  --text:  #e2e8f0;   /* Primary text */
+  --text2: #94a3b8;   /* Secondary / muted text */
+  --text3: #4b6080;   /* Tertiary / hint text */
+
+  /* Font families */
+  --mono: 'Share Tech Mono', monospace;   /* Data values, codes, timestamps */
+  --sans: 'Barlow', sans-serif;           /* Body text, descriptions */
+  --cond: 'Barlow Condensed', sans-serif; /* Headings, titles, buttons */
+}
+
+
+/* ── 2. RESET & BASE STYLES ─────────────────────────────────────
+   Removes default browser margins/padding and sets box model.
+   ─────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+
+/* ── 3. SCANLINE OVERLAY ────────────────────────────────────────
+   Creates a subtle CRT/industrial monitor effect using
+   a repeating gradient over the entire page.
+   pointer-events: none ensures it doesn't block clicks.
+   ─────────────────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 999;
+}
+
+
+/* ── 4. NAVIGATION BAR ──────────────────────────────────────────
+   Sticky top bar with logo, live status pill, and clock.
+   ─────────────────────────────────────────────────────────── */
+nav {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Logo group — icon + text */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--green);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.logo-text {
+  font-family: var(--cond);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text);
+}
+
+/* Highlight the "Factory" part of the logo in green */
+.logo-text span {
+  color: var(--green);
+}
+
+/* Right side of nav — pill + clock */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Animated green "LIVE MONITORING" pill */
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--green-dim);
+  border: 1px solid var(--green);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green);
+  letter-spacing: 1px;
+}
+
+/* Pulsing dot inside the live pill */
+.pulse {
+  width: 8px;
+  height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+/* Real-time clock display */
+.time-display {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text2);
+}
+
+
+/* ── 5. COMPLIANCE BANNER ───────────────────────────────────────
+   Full-width banner showing overall compliance status,
+   score ring, key stats, and generate report button.
+   ─────────────────────────────────────────────────────────── */
+.compliance-banner {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  animation: fadeIn 0.5s ease;
+}
+
+/* Left section — score ring + text */
+.compliance-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* SVG score ring dimensions */
+.compliance-score-ring {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+/* Text next to the score ring */
+.score-info h2 {
+  font-family: var(--cond);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: 1px;
+}
+
+.score-info p {
+  color: var(--text2);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.score-info .unit {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+
+/* Stats row — readings, breaches, sensors ok, days */
+.compliance-stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.c-stat {
+  text-align: center;
+}
+
+.c-stat .val {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Colour variants for stat values */
+.c-stat .val.good { color: var(--green); }
+.c-stat .val.warn { color: var(--amber); }
+.c-stat .val.bad  { color: var(--red);   }
+
+.c-stat .lbl {
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 1px;
+  margin-top: 2px;
+  text-transform: uppercase;
+}
+
+/* Generate Report button */
+.report-btn {
+  background: var(--green);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-family: var(--cond);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.report-btn:hover {
+  background: #00ffb3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 229, 160, 0.4);
+}
+
+
+/* ── 6. SENSOR CARDS GRID ───────────────────────────────────────
+   Responsive grid of 6 sensor cards.
+   Each card shows: label, status badge, value, desc, bar.
+   ─────────────────────────────────────────────────────────── */
+.sensor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Individual sensor card */
+.sensor-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.2s;
+  animation: fadeIn 0.5s ease both;
+}
+
+.sensor-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border2);
+}
+
+/* Coloured top accent bar — changes with status */
+.sensor-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+}
+
+.sensor-card.good::before { background: var(--green); }
+.sensor-card.warn::before { background: var(--amber); }
+.sensor-card.bad::before  { background: var(--red);   }
+
+/* Top row — label left, status badge right */
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+/* Small uppercase sensor label */
+.card-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Status badge — good / warn / bad */
+.card-status {
+  font-size: 10px;
+  font-family: var(--mono);
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.card-status.good { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
+.card-status.warn { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
+.card-status.bad  { background: var(--red-dim);   color: var(--red);   border: 1px solid var(--red);   }
+
+/* Large monospaced sensor reading value */
+.card-value {
+  font-family: var(--mono);
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+/* Unit text inside the value (smaller, muted) */
+.card-value .unit {
+  font-size: 16px;
+  color: var(--text3);
+  margin-left: 4px;
+}
+
+/* Sensor description text below the value */
+.card-desc {
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 1rem;
+}
+
+/* Progress bar track */
+.card-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+/* Progress bar fill — colour matches card status */
+.card-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+
+.good .card-bar-fill { background: var(--green); }
+.warn .card-bar-fill { background: var(--amber); }
+.bad  .card-bar-fill { background: var(--red);   }
+
+/* Staggered entrance animation for cards */
+.sensor-card:nth-child(1) { animation-delay: 0.05s; }
+.sensor-card:nth-child(2) { animation-delay: 0.10s; }
+.sensor-card:nth-child(3) { animation-delay: 0.15s; }
+.sensor-card:nth-child(4) { animation-delay: 0.20s; }
+.sensor-card:nth-child(5) { animation-delay: 0.25s; }
+.sensor-card:nth-child(6) { animation-delay: 0.30s; }
+
+
+/* ── 7. CHART PANEL ─────────────────────────────────────────────
+   Contains the Chart.js historical trend chart and tab buttons.
+   ─────────────────────────────────────────────────────────── */
+.chart-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  animation: fadeIn 0.6s ease both;
+}
+
+/* Shared header style used by both chart and alerts panels */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+/* Panel section title */
+.panel-title {
+  font-family: var(--cond);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+/* Tab button group for chart switching */
+.chart-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+/* Individual chart tab button */
+.chart-tab {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text3);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+}
+
+.chart-tab.active,
+.chart-tab:hover {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--green-dim);
+}
+
+/* Canvas wrapper — Chart.js needs explicit height */
+.chart-container {
+  height: 200px;
+  position: relative;
+}
+
+
+/* ── 8. ALERTS PANEL ────────────────────────────────────────────
+   Scrollable log of threshold breach events and system alerts.
+   ─────────────────────────────────────────────────────────── */
+.alerts-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  animation: fadeIn 0.6s ease both;
+}
+
+/* Alert count shown in panel header */
+.alert-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+}
+
+/* Scrollable alert list */
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* Custom scrollbar styling */
+.alert-list::-webkit-scrollbar        { width: 4px; }
+.alert-list::-webkit-scrollbar-track  { background: var(--bg); }
+.alert-list::-webkit-scrollbar-thumb  { background: var(--border2); border-radius: 2px; }
+
+/* Individual alert row */
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  animation: slideIn 0.3s ease;
+}
+
+/* Coloured status dot on the left of each alert */
+.alert-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.alert-dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.alert-dot.bad  { background: var(--red);   box-shadow: 0 0 6px var(--red);   }
+.alert-dot.good { background: var(--green);                                     }
+
+/* Alert text content */
+.alert-body { flex: 1; }
+
+.alert-msg {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+/* Timestamp below the alert message */
+.alert-time {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+
+/* ── 9. BOTTOM GRID LAYOUT ──────────────────────────────────────
+   Two-column layout for chart panel and alerts panel.
+   ─────────────────────────────────────────────────────────── */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Main content padding and max-width constraint */
+main {
+  padding: 1.5rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+
+/* ── 10. FOOTER ─────────────────────────────────────────────────
+   Simple centred footer with team and project info.
+   ─────────────────────────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 1.5rem;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 1px;
+  border-top: 1px solid var(--border);
+}
+
+/* Highlight team names in green */
+footer span {
+  color: var(--green);
+}
+
+
+/* ── 11. REPORT MODAL ───────────────────────────────────────────
+   Overlay + centred modal card for the report generation popup.
+   Shown/hidden by modal.js using the .open class.
+   ─────────────────────────────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Add .open class via JS to show the modal */
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+}
+
+.modal h3 {
+  font-family: var(--cond);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.modal p {
+  color: var(--text2);
+  font-size: 14px;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+/* Filename shown in modal */
+.modal-filename {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--green);
+  margin-bottom: 1.5rem;
+}
+
+.modal-close {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.modal-close:hover {
+  background: var(--border);
+}
+
+
+/* ── 12. ANIMATIONS & KEYFRAMES ─────────────────────────────────
+   All keyframe animations used throughout the dashboard.
+   ─────────────────────────────────────────────────────────── */
+
+/* Fade + slide down — used for cards and panels on page load */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* Slide in from left — used for new alert items */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+/* Pulsing dot animation — used in the live status pill */
+@keyframes pulse {
+  0%,  100% { opacity: 1;   transform: scale(1);   }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+
+/* ── 13. RESPONSIVE / MOBILE STYLES ─────────────────────────────
+   Adjustments for screens narrower than 900px (tablets/phones).
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+
+  /* Stack chart and alerts vertically on small screens */
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stack compliance banner content vertically */
+  .compliance-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Allow stats to wrap on small screens */
+  .compliance-stats {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  /* Reduce main padding on mobile */
+  main {
+    padding: 1rem;
+  }
+
+  /* Reduce nav padding on mobile */
+  nav {
+    padding: 0 1rem;
+  }
+}
